@@ -14,4 +14,7 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
     @Query(name = "Member.findByUsername") // 해당 어노테이션을 주석처리해도 잘 동작한다. Spring Data JPA의 관례를 따라
     // 해당 메서드의 이름을 가지고 있는 NamedQuery 가 있는지 먼저 찾아보기 때문.
     List<Member> findByUsername(@Param("username") String username);
+
+    @Query("select m from Member m where m.username = :username and m.age = :age")
+    List<Member> findUser(@Param("username") String username, @Param("age") int age);
 }

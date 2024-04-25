@@ -107,4 +107,20 @@ class MemberRepositoryTest {
         Member find = result.get(0);
         assertThat(find).isEqualTo(m1);
     }
+
+    @Test
+    void findUser() throws Exception {
+        //given
+        Member m1 = new Member("memberA", 10);
+        Member m2 = new Member("memberB", 20);
+
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        //when
+        List<Member> result = memberRepository.findUser("memberA", 10);
+
+        //then
+        assertThat(result.getFirst()).isEqualTo(m1);
+    }
 }
