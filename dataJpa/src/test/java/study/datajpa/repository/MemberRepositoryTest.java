@@ -3,6 +3,10 @@ package study.datajpa.repository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import study.datajpa.dto.MemberDto;
 import study.datajpa.entity.Member;
@@ -211,5 +215,64 @@ class MemberRepositoryTest {
         assertThat(listResult).containsExactly(m1);
         assertThat(findMember).isEqualTo(m1);
         assertThat(optionalMember.orElse(null)).isEqualTo(m1);
+    }
+
+    @Test
+    void paging() throws Exception {
+        //given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 10));
+        memberRepository.save(new Member("member3", 10));
+        memberRepository.save(new Member("member4", 10));
+        memberRepository.save(new Member("member5", 10));
+        memberRepository.save(new Member("member6", 10));
+
+        int age = 10;
+        PageRequest pageRequest = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "username"));
+
+        //when
+        Page<Member> page = memberRepository.findByAge(age, pageRequest); // 반환타입이 Page 라서 count 쿼리를 알아서 한 번 더 날림.
+
+        // DTO로 변환
+        Page<MemberDto> toMap = page.map(member -> new MemberDto(member.getId(), member.getUsername(), null/*member.getTeam().getName()*/));
+        for (MemberDto memberDto : toMap) {
+            System.out.println("memberDto = " + memberDto);
+        }
+
+        //then
+        List<Member> content = page.getContent();
+        long totalElements = page.getTotalElements();
+
+        assertThat(content.size()).isEqualTo(3);
+        assertThat(totalElements).isEqualTo(6);
+        assertThat(page.getNumber()).isEqualTo(0); // 현재 페이지 넘버
+        assertThat(page.getTotalPages()).isEqualTo(2); // 총 페이지
+        assertThat(page.isFirst()).isTrue(); // 첫번째 페이지냐?
+        assertThat(page.hasNext()).isTrue(); // 다음 페이지가 있냐?
+    }
+
+    @Test
+    void slice() throws Exception {
+        //given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 10));
+        memberRepository.save(new Member("member3", 10));
+        memberRepository.save(new Member("member4", 10));
+        memberRepository.save(new Member("member5", 10));
+        memberRepository.save(new Member("member6", 10));
+
+        int age = 10;
+        PageRequest pageRequest = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "username"));
+
+        //when
+        Slice<Member> page = memberRepository.findSliceByAge(age, pageRequest); // Slice 를 사용하게 되면 PageRequest 에서 3개를 요청했으나 +1 해서 4개를 가져온다.
+
+        //then
+        List<Member> content = page.getContent();
+
+        assertThat(content.size()).isEqualTo(3); // 4개를 가져오지만 content는 내가 요청한 3개만 있다는 것을 알 수 있다.
+        assertThat(page.getNumber()).isEqualTo(0);
+        assertThat(page.isFirst()).isTrue();
+        assertThat(page.hasNext()).isTrue();
     }
 }
