@@ -87,4 +87,21 @@ class MemberJpaRepositoryTest {
         assertThat(members.getFirst().getAge()).isEqualTo(20);
         assertThat(members.size()).isEqualTo(1);
     }
+
+    @Test
+    void findByUsername() throws Exception {
+        //given
+        Member m1 = new Member("memberA", 10);
+        Member m2 = new Member("memberB", 20);
+
+        memberJpaRepository.save(m1);
+        memberJpaRepository.save(m2);
+
+        //when
+        List<Member> result = memberJpaRepository.findByUsername("memberA");
+
+        //then
+        Member find = result.get(0);
+        assertThat(find).isEqualTo(m1);
+    }
 }
