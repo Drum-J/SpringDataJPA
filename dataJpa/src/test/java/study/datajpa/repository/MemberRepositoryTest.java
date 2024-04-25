@@ -1,22 +1,23 @@
 package study.datajpa.repository;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import study.datajpa.dto.MemberDto;
 import study.datajpa.entity.Member;
+import study.datajpa.entity.Team;
 
 import java.util.List;
-import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
 class MemberRepositoryTest {
 
     @Autowired MemberRepository memberRepository;
+    @Autowired TeamRepository teamRepository;
 
     @Test
     void memberTest() throws Exception {
@@ -122,5 +123,39 @@ class MemberRepositoryTest {
 
         //then
         assertThat(result.getFirst()).isEqualTo(m1);
+    }
+
+    @Test
+    void findUsernameList() throws Exception {
+        //given
+        Member m1 = new Member("memberA", 10);
+        Member m2 = new Member("memberB", 20);
+
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        //when
+        List<String> usernameList = memberRepository.findUsernameList();
+
+        //then
+        assertThat(usernameList).containsExactly("memberA", "memberB");
+    }
+
+    @Test
+    void findMemberDto() throws Exception {
+        //given
+        Team teamA = new Team("teamA");
+        teamRepository.save(teamA);
+
+        Member m1 = new Member("memberA", 10, teamA);
+        memberRepository.save(m1);
+
+        //when
+        List<MemberDto> memberDto = memberRepository.findMemberDto();
+
+        //then
+        assertThat(memberDto.getFirst().getId()).isEqualTo(m1.getId());
+        assertThat(memberDto.getFirst().getUsername()).isEqualTo(m1.getUsername());
+        assertThat(memberDto.getFirst().getTeamName()).isEqualTo(teamA.getName());
     }
 }
