@@ -341,4 +341,37 @@ class MemberRepositoryTest {
         }
         
     }
+
+    @Test
+    void queryHint() throws Exception {
+        //given
+        Member member1 = new Member("member1", 10);
+        memberRepository.save(member1);
+        em.flush();
+        em.clear();
+
+        //when
+        Member findMember = memberRepository.findReadOnlyByUsername("member1"); //readOnly 힌트를 줬기 때문에 변경 감지가 되지 않는다.
+        //findMember 에 대해서는 readOnly = true 로 작동하는 것 같다.
+        findMember.changeUsername("member22");
+
+        em.flush();
+        //then
+
+    }
+
+    @Test
+    void lockTest() throws Exception {
+        //given
+        Member member1 = new Member("member1", 10);
+        memberRepository.save(member1);
+        em.flush();
+        em.clear();
+
+        //when
+        List<Member> findMembers = memberRepository.findLockByUsername("member1");
+
+        //then
+
+    }
 }
