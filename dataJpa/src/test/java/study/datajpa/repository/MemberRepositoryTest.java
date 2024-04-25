@@ -303,4 +303,42 @@ class MemberRepositoryTest {
         assertThat(count).isEqualTo(2);
 
     }
+    
+    @Test
+    void findMemberLazy() throws Exception {
+        //given
+        //member1 -> teamA
+        //member2 -> teamB
+
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        teamRepository.save(teamA);
+        teamRepository.save(teamB);
+
+        Member member1 = new Member("member1", 10, teamA);
+        Member member2 = new Member("member2", 10, teamB);
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+
+        //영속성 컨텍스트 캐시 정보 -> DB 반영
+        em.flush();
+        em.clear();
+
+        //when
+        List<Member> members = memberRepository.findAll();
+        //List<Member> members = memberRepository.findEntityGraphByUsername("member1");
+        //List<Member> members = memberRepository.findMemberFetchJoin(); fetchJoin 을 사용해서 문제 해결
+
+        for (Member member : members) {
+            System.out.println("member.username = " + member.getUsername());
+            System.out.println("member.proxyTeam = " + member.getTeam().getClass()); // 이 경우에는 proxy 객체를 넘겨준다.
+            //다만 .getTeam() 만 사용하면 실제 객체를 가져오기 위해 select 를 수행한다.
+        }
+
+        //then - Lazy 로딩, getTeam().getName() 을 수행할 때 Team 을 select 하는 쿼리를 날린다. 추가로 쿼리가 발생하는 N + 1 문제!
+        for (Member member : members) {
+            System.out.println("member.team = " + member.getTeam().getName());
+        }
+        
+    }
 }
