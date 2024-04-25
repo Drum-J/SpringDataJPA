@@ -10,6 +10,7 @@ import study.datajpa.entity.Team;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -190,5 +191,25 @@ class MemberRepositoryTest {
 
         //then
         assertThat(result).containsExactly(m1, m2);
+    }
+
+    @Test
+    void resultType() throws Exception {
+        //given
+        Member m1 = new Member("memberA", 10);
+        Member m2 = new Member("memberB", 20);
+
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        //when
+        List<Member> listResult = memberRepository.findListByUsername("memberA");
+        Member findMember = memberRepository.findMemberByUsername("memberA");
+        Optional<Member> optionalMember = memberRepository.findOptionalByUsername("memberA");
+
+        //then
+        assertThat(listResult).containsExactly(m1);
+        assertThat(findMember).isEqualTo(m1);
+        assertThat(optionalMember.orElse(null)).isEqualTo(m1);
     }
 }
