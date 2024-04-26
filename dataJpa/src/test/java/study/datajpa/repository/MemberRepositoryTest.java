@@ -374,4 +374,17 @@ class MemberRepositoryTest {
         //then
 
     }
+
+    @Test
+    void customRepository () throws Exception {
+        //given
+        Member member = new Member("member1", 1);
+        memberRepository.save(member);
+
+        //when
+        List<Member> memberCustom = memberRepository.findMemberCustom();
+
+        //then
+        assertThat(memberCustom).containsExactly(member);
+    }
 }
